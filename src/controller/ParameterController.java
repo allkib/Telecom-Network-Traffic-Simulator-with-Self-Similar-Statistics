@@ -57,7 +57,7 @@ public class ParameterController {
 
     public SimulationParameters loadParametersFromFile(String filename) {
         // Stub: delegate to FileHandler; actual parsing to be implemented later
-        String raw = fileHandler.readConfiguration(filename);
+        String raw = fileHandler.readConfig(filename);
         if (raw == null || raw.isEmpty()) {
             return null;
         }
@@ -69,6 +69,6 @@ public class ParameterController {
         // Stub: delegate to FileHandler; actual serialization to be implemented later
         if (params == null) return false;
         String serialized = ""; // TODO: serialize params to a simple key=value format
-        return fileHandler.writeConfiguration(filename, serialized);
+        return fileHandler.writeConfig(filename, serialized);
     }
 }
