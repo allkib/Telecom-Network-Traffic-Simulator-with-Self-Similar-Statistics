@@ -3,6 +3,7 @@ package controller;
 import model.Simulation;
 import model.SimulationParameters;
 import model.TrafficStatistics;
+import util.FileHandler;
 
 // Main controller that orchestrates the simulation process.
 public class SimulationController {
@@ -10,6 +11,7 @@ public class SimulationController {
     private ParameterController parameterController;
     private EventController eventController;
     private TrafficController trafficController;
+    private final FileHandler fileHandler = new FileHandler();
     
     public SimulationController() {
         this.simulation = new Simulation();
@@ -27,6 +29,7 @@ public class SimulationController {
     public void runSimulation(SimulationParameters params) {
         // Validate parameters
         if (!parameterController.validateParameters(params)) {
+            // Leave errors in ParameterController for view to display
             return;
         }
         
@@ -59,7 +62,7 @@ public class SimulationController {
             if (simulation.getCurrTime() >= nextSampleTime) {
                 if (trafficController != null) {
                     double aggregateTraffic = trafficController.calculateAggregateTraffic(simulation.getCurrTime());
-                    simulation.getStats().addMeasurement(aggregateTraffic);
+                    simulation.getStats().addMeasurement(simulation.getCurrTime(), aggregateTraffic);
                 }
                 nextSampleTime += samplingInt;
             }
@@ -85,6 +88,9 @@ public class SimulationController {
         // Calculate final statistics
         simulation.getStats().calculateStatistics();
         
+        // Export CSV (headless)
+        fileHandler.writeCSV("output.csv", simulation.getStats().getTimeSeries());
+
         // Stop simulation
         simulation.stop();
     }

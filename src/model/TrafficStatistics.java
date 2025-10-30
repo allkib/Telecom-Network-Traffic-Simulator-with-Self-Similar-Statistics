@@ -18,6 +18,11 @@ public class TrafficStatistics {
         timeSeries.add(rate);
     }
 
+    // Time-aware overload for future expansion; currently stores rate only
+    public void addMeasurement(double time, double rate) {
+        timeSeries.add(rate);
+    }
+
     public void calculateStatistics() {
         if (timeSeries.isEmpty()) {
             avgRate = 0.0;
