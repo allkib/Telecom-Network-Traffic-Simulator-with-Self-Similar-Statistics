@@ -2,8 +2,8 @@
  * @author: Clarence
  * 
  * Event queue to manage simulation events in chronological order.
- * PriorityQueue was chosen as it takes O(log n) time for adding and removing events since it uses a binary heap.
- * PriorityQueue accepts equal keys.
+ * PriorityQueue was chosen as it takes O(log n) time for adding and removing events since it uses a binary heap. PriorityQueue accepts equal keys.
+ * LinkedList not suitable as O(n) for insertion.
  */
 
 package model;

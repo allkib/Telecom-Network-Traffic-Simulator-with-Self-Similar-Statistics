@@ -6,7 +6,7 @@
 package model;
 
 public class Event implements Comparable<Event> {
-    private double timestamp;
+    private final double timestamp;
     private final int sourceID;
     private final EventType type;
 
