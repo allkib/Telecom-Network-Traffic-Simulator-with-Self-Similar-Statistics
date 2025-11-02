@@ -1,5 +1,7 @@
 import controller.ParameterController;
 import controller.SimulationController;
+import controller.EventController;
+import controller.TrafficController;
 import model.SimulationParameters;
 
 public class app {
@@ -18,9 +20,10 @@ public class app {
         }
 
         SimulationController simController = new SimulationController();
+        simController.setTrafficController(new TrafficController());
+        simController.setEventController(new EventController());
         simController.runSimulation(params);
 
-        System.out.println("Simulation completed. Samples collected: " 
-            + simController.getResults().getTimeSeries().size());
+        System.out.println("Simulation completed. Samples collected: " + simController.getResults().getTimeSeries().size());
     }
 }
