@@ -1,5 +1,5 @@
 /**
- * @author Clarence
+ * @author: Clarence
  * 
  * Immutable events ordered by timestamp, then sourceID, then type. 
  */
