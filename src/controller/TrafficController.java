@@ -46,12 +46,12 @@ public class TrafficController {
             Long seedPerSource = (seed == null) ? null : (seed + i);
             RandomNumberGenerator rng = new RandomNumberGenerator(seedPerSource);
 
-            TrafficSource src = new TrafficSource(i + 1, onDist, offDist, rng, onRate);
+            TrafficSource src = new TrafficSource(i, onDist, offDist, rng, onRate);
             sources.add(src);
         }
     }
 
-    // Sum instantaneous rates across all sources. Basically, the number of sources multiplied by the onRate.
+    // Sum instantaneous rates across all sources. Basically, the number of ON sources multiplied by the onRate.
     public double calculateAggregateTraffic(double timestamp) {
         double totalRate = 0.0;
         for (TrafficSource s : sources) {
