@@ -50,7 +50,7 @@ public class TrafficSource {
         return nextTransitionTime;
     }
 
-    public double getInstantRate() {
+    public double getInstantRate(double currentTime) {
         return isOn ? onRate : 0.0;
     }
 

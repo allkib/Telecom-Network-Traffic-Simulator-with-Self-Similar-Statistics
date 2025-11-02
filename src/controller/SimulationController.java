@@ -41,7 +41,7 @@ public class SimulationController {
             trafficController.initializeSources(params);
         }
         if (eventController != null) {
-            eventController.scheduleInitialEvents(trafficController.getTrafficSources());
+            eventController.processInitialEvents(trafficController.getTrafficSources());
         }
         
         // Main simulation loop
