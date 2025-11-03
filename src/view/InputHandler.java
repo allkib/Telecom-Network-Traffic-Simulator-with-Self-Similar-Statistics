@@ -37,6 +37,9 @@
         while (true) {
             System.out.println(displayPrompt + ": ");
             String line = scanner.nextLine().trim();
+            if (isQuit(line)) {
+                throw new QuitHandler("User requested to quit");
+            }
             if (line == null || line.isEmpty()) {
                 return defaultVal;
             }
