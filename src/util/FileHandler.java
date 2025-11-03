@@ -6,17 +6,32 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 // File handler utility 
 public class FileHandler {
-    public boolean writeCSV(String filename, java.util.List<Double> timeSeries) {
+    public boolean writeAggregateTrafficCSV(String filename, java.util.List<Double> timeSeries) {
         if (filename == null || filename.isEmpty() || timeSeries == null) return false;
         Path path = Paths.get(filename);
         try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
             // Simple one-value-per-line CSV
             for (Double v : timeSeries) {
                 writer.write(v == null ? "" : v.toString());
+                writer.newLine();
+            }
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    public boolean writeEventLogCSV(String filename, java.util.List<model.Event> log) {
+        if (filename == null || filename.isEmpty() || log == null) return false;
+        Path path = Paths.get(filename);
+        try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+            writer.write("Timestamp,SourceID,Event Type");
+            writer.newLine();
+            for (model.Event record : log) {
+                writer.write(record.getTimestamp() + "," + record.getSourceID() + "," + record.getType());
                 writer.newLine();
             }
             return true;

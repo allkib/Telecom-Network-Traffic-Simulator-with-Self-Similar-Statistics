@@ -4,6 +4,9 @@ import model.Simulation;
 import model.SimulationParameters;
 import model.TrafficStatistics;
 import util.FileHandler;
+import java.util.List;
+import java.util.ArrayList;
+import model.Event;
 
 // Main controller that orchestrates the simulation process.
 public class SimulationController {
@@ -27,6 +30,7 @@ public class SimulationController {
     }
     
     public void runSimulation(SimulationParameters params) {
+        List<Event> eventLog = new ArrayList<>();
         // Validate parameters
         if (!parameterController.validateParameters(params)) {
             // Leave errors in ParameterController for view to display
@@ -54,7 +58,9 @@ public class SimulationController {
                 while (eventController.hasEvents() && 
                        eventController.getEventQueue().peek() != null &&
                        eventController.getEventQueue().peek().getTimestamp() <= simulation.getCurrTime()) {
+                    Event nextEvent = eventController.getEventQueue().peek();
                     eventController.processNextEvent(trafficController.getTrafficSources());
+                    eventLog.add(nextEvent);
                 }
             }
             
@@ -88,8 +94,9 @@ public class SimulationController {
         // Calculate final statistics
         simulation.getStats().calculateStatistics();
         
-        // Export CSV (headless)
-        fileHandler.writeCSV("output.csv", simulation.getStats().getTimeSeries());
+        // Export CSVs
+        fileHandler.writeAggregateTrafficCSV("Aggregate_Traffic_Rate.csv", simulation.getStats().getTimeSeries());
+        fileHandler.writeEventLogCSV("Event_Log.csv", eventLog);
 
         // Stop simulation
         simulation.stop();
