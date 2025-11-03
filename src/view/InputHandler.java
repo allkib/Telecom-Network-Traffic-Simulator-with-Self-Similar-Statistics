@@ -36,7 +36,7 @@
         try {
             return Long.parseLong(s);
         } catch (NumberFormatException e){
-            System.out.println("Invalid long input. Using random seed.");
+            System.out.println("Using random seed.");
             return defaultVal;
         }
     }
@@ -44,6 +44,13 @@
     public String readLine(String prompt, String defaultVal){
         System.out.print(prompt + " [" + defaultVal + "]: ");
         String line = scanner.nextLine().trim();
+        if (isQuit(line)) {
+            throw new QuitHandler("User requested to quit");
+        }
         return line.isEmpty() ? defaultVal : line;
+    }
+
+    public boolean isQuit(String s) {
+        return s != null && (s.equalsIgnoreCase("q") || s.equalsIgnoreCase("quit") || s.equalsIgnoreCase("exit"));
     }
  }

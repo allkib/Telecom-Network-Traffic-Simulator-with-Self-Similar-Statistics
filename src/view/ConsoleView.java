@@ -23,33 +23,37 @@
     }
 
     public void startSimulation() {
-        SimulationParameters params = SimulationParameters.defaults();
+        try {
+            SimulationParameters params = SimulationParameters.defaults();
 
-        System.out.println("Welcome to the Telecom Traffic Simulation.");
-        System.out.println("Please enter simulation parameters. Or press Enter to use defaults.");
+            System.out.println("Welcome to the Telecom Traffic Simulation.");
+            System.out.println("Please enter simulation parameters. Or press Enter to use defaults.");
 
-        params.setSimDuration(input.readDouble("Total Simulation Duration", params.getSimDuration()));
-        params.setNumSources(input.readInt("Number of Traffic Sources", params.getNumSources()));
-        params.setParetoAlpha(input.readDouble("Pareto Alpha", params.getParetoAlpha()));
-        params.setParetoMinVal(input.readDouble("Pareto Minimum Value", params.getParetoMinVal()));
-        params.setSamplingInt(input.readDouble("Sampling Interval", params.getSamplingInt()));
+            params.setSimDuration(input.readDouble("Total Simulation Duration", params.getSimDuration()));
+            params.setNumSources(input.readInt("Number of Traffic Sources", params.getNumSources()));
+            params.setParetoAlpha(input.readDouble("Pareto Alpha", params.getParetoAlpha()));
+            params.setParetoMinVal(input.readDouble("Pareto Minimum Value", params.getParetoMinVal()));
+            params.setSamplingInt(input.readDouble("Sampling Interval", params.getSamplingInt()));
 
-        Long seed = input.readLongOrNull("Seed (integer/blank for random)", params.getSeed());
-        params.setSeed(seed);
+            Long seed = input.readLongOrNull("Seed (integer/blank for random)", params.getSeed());
+            params.setSeed(seed);
 
-        if (!paramController.validateParameters(params)) {
-            System.out.println("Parameter validation failed with the following errors:");
-            for (String err : paramController.getValidationErrors()) {
-                System.out.println(err);
+            if (!paramController.validateParameters(params)) {
+                System.out.println("Parameter validation failed with the following errors:");
+                for (String err : paramController.getValidationErrors()) {
+                    System.out.println(err);
+                }
+                System.out.println("Exiting simulation due to invalid parameters.");
+                return;
             }
-            System.out.println("Exiting simulation due to invalid parameters.");
-            return;
+
+            simController.runSimulation(params);
+
+            TrafficStatistics resultStats = simController.getResults();
+            System.out.println("Simulation completed successfully.");
+            OutputFormatter.printSummary(resultStats);
+        } catch (QuitHandler qh) {
+            System.out.println("Exiting simulation.");
         }
-
-        simController.runSimulation(params);
-
-        TrafficStatistics resultStats = simController.getResults();
-        System.out.println("Simulation completed successfully.");
-        OutputFormatter.printSummary(resultStats);
     }
  }
