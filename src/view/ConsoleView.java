@@ -28,6 +28,8 @@
 
             System.out.println("Welcome to the Telecom Traffic Simulation.");
             System.out.println("Please enter simulation parameters. Or press Enter to use defaults.");
+            System.out.println("At any time, enter 'q', 'quit', or 'exit' to exit the simulation.");
+            System.out.println("------------------------------------");
 
             params.setSimDuration(input.readDouble("Total Simulation Duration", params.getSimDuration()));
             params.setNumSources(input.readInt("Number of Traffic Sources", params.getNumSources()));
@@ -35,7 +37,7 @@
             params.setParetoMinVal(input.readDouble("Pareto Minimum Value", params.getParetoMinVal()));
             params.setSamplingInt(input.readDouble("Sampling Interval", params.getSamplingInt()));
 
-            Long seed = input.readLongOrNull("Seed (integer/blank for random)", params.getSeed());
+            Long seed = input.readLongOrNull("Seed", params.getSeed());
             params.setSeed(seed);
 
             if (!paramController.validateParameters(params)) {

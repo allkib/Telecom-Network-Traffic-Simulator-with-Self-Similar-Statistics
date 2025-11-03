@@ -10,34 +10,41 @@
     private final Scanner scanner = new Scanner(System.in);
 
     public int readInt(String prompt, int defaultVal){
-        String s = readLine(prompt, String.valueOf(defaultVal));
-        try {
-            return Integer.parseInt(s);
-        } catch (NumberFormatException e){
-            System.out.println("Invalid integer input. Using default: " + defaultVal);
-            return defaultVal;
+        while (true) {
+            String s = readLine(prompt, String.valueOf(defaultVal));
+            try {
+                return Integer.parseInt(s);
+            } catch (NumberFormatException e){
+                System.out.println("Invalid integer input. Try again (or press ENTER for default: " + defaultVal + ")");
+            }
         }
     }
 
     public double readDouble(String prompt, double defaultVal){
-        String s = readLine(prompt, String.valueOf(defaultVal));
-        try {
-            return Double.parseDouble(s);
-        } catch (NumberFormatException e){
-            System.out.println("Invalid double input. Using default: " + defaultVal);
-            return defaultVal;
+        while (true) {
+            String s = readLine(prompt, String.valueOf(defaultVal));
+            try {
+                return Double.parseDouble(s);
+            } catch (NumberFormatException e){
+                System.out.println("Invalid double input. Try again (or press ENTER for default: " + defaultVal + ")");
+            }
         }
     }
 
     public Long readLongOrNull(String prompt, Long defaultVal){
-        String shownDefaultSeed = defaultVal == null ? "random" : String.valueOf(defaultVal);
-        String s = readLine(prompt, shownDefaultSeed);
-        if (s == null || s.isEmpty()) return defaultVal;
-        try {
-            return Long.parseLong(s);
-        } catch (NumberFormatException e){
-            System.out.println("Using random seed.");
-            return defaultVal;
+        String displayPrompt = prompt + " [" + (defaultVal == null ? "random" : defaultVal) + "]";
+
+        while (true) {
+            System.out.println(displayPrompt + ": ");
+            String line = scanner.nextLine().trim();
+            if (line == null || line.isEmpty()) {
+                return defaultVal;
+            }
+            try {
+                return Long.parseLong(line);
+            } catch (NumberFormatException e){
+                System.out.println("Invalid long. Try again (or press ENTER for random seed).");
+            }
         }
     }
 
