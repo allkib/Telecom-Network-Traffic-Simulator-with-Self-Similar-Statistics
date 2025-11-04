@@ -96,7 +96,6 @@ public class SimulationController {
         // Export CSV (aggregate traffic only)
         fileHandler.writeAggregateTrafficCSV("Aggregate_Traffic.csv", simulation.getStats().getTimeSeries());
         fileHandler.writeEventLogCSV("Event_Log.csv", eventLog);
-
         // Stop simulation
         simulation.stop();
         return true;
