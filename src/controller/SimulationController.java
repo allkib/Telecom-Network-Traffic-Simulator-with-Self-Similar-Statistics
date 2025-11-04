@@ -1,3 +1,4 @@
+// All
 package controller;
 
 import model.Simulation;
@@ -29,77 +30,75 @@ public class SimulationController {
         this.trafficController = trafficController;
     }
     
-    public void runSimulation(SimulationParameters params) {
+    public boolean runSimulation(SimulationParameters params) {
         List<Event> eventLog = new ArrayList<>();
         // Validate parameters
         if (!parameterController.validateParameters(params)) {
             // Leave errors in ParameterController for view to display
-            return;
+            return false;
         }
         
         // Initialize simulation
         simulation.start(params.getSimDuration());
         
-        // Initialize Person B's components if available
-        if (trafficController != null) {
-            trafficController.initializeSources(params);
+        if (trafficController == null || eventController == null) {
+            simulation.stop();
+            return false;
         }
-        if (eventController != null) {
-            eventController.processInitialEvents(trafficController.getTrafficSources());
-        }
+        
+        trafficController.initializeSources(params);
+        eventController.processInitialEvents(trafficController.getTrafficSources());
         
         // Main simulation loop
         double samplingInt = params.getSamplingInt();
         double nextSampleTime = 0.0;
         
         while (simulation.isRunning()) {
-            // Process events 
-            if (eventController != null && eventController.hasEvents()) {
-                while (eventController.hasEvents() && 
-                       eventController.getEventQueue().peek() != null &&
-                       eventController.getEventQueue().peek().getTimestamp() <= simulation.getCurrTime()) {
-                    Event nextEvent = eventController.getEventQueue().peek();
-                    eventController.processNextEvent(trafficController.getTrafficSources());
-                    eventLog.add(nextEvent);
-                }
+            // Process all events up to current time
+            while (eventController.hasEvents() && 
+                   eventController.getEventQueue().peek() != null &&
+                   eventController.getEventQueue().peek().getTimestamp() <= simulation.getCurrTime()) {
+                Event nextEvent = eventController.getEventQueue().peek();
+                eventController.processNextEvent(trafficController.getTrafficSources());
+                eventLog.add(nextEvent);
             }
-            
+
             // Sample traffic at intervals
             if (simulation.getCurrTime() >= nextSampleTime) {
-                if (trafficController != null) {
-                    double aggregateTraffic = trafficController.calculateAggregateTraffic(simulation.getCurrTime());
-                    simulation.getStats().addMeasurement(simulation.getCurrTime(), aggregateTraffic);
-                }
+                double aggregateTraffic = trafficController.calculateAggregateTraffic(simulation.getCurrTime());
+                simulation.getStats().addMeasurement(simulation.getCurrTime(), aggregateTraffic);
                 nextSampleTime += samplingInt;
             }
-            
-            // Advance simulation time
-            // Use a small time step or advance to next event
-            double timeStep = samplingInt / 10.0; // Small step
-            if (eventController != null && eventController.hasEvents() && 
-                eventController.getEventQueue().peek() != null) {
+
+            // Determine next target time (next event, next sample, or small step)
+            double curr = simulation.getCurrTime();
+            double nextTarget = curr + samplingInt / 10.0; // fallback small step
+            if (eventController.hasEvents() && eventController.getEventQueue().peek() != null) {
                 double nextEventTime = eventController.getEventQueue().peek().getTimestamp();
-                if (nextEventTime < simulation.getCurrTime() + timeStep) {
-                    timeStep = nextEventTime - simulation.getCurrTime();
+                if (nextEventTime > curr) {
+                    nextTarget = Math.min(nextTarget, nextEventTime);
                 }
             }
-            simulation.tick(timeStep);
-            
-            // Check if simulation should end
-            if (!simulation.isRunning()) {
-                break;
+            if (nextSampleTime > curr) {
+                nextTarget = Math.min(nextTarget, nextSampleTime);
             }
+
+            double timeStep = nextTarget - curr;
+            if (timeStep <= 0) {
+                timeStep = Math.max(1e-6, samplingInt / 1000.0);
+            }
+            simulation.tick(timeStep);
         }
         
         // Calculate final statistics
         simulation.getStats().calculateStatistics();
         
-        // Export CSVs
-        fileHandler.writeAggregateTrafficCSV("Aggregate_Traffic_Rate.csv", simulation.getStats().getTimeSeries());
-        fileHandler.writeEventLogCSV("Event_Log.csv", eventLog);
+        // Export CSV (aggregate traffic only)
+        fileHandler.writeAggregateTrafficCSV("output.csv", simulation.getStats().getTimeSeries());
 
         // Stop simulation
         simulation.stop();
+        return true;
     }
     
     public TrafficStatistics getResults() {

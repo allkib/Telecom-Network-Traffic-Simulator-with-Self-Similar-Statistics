@@ -56,19 +56,84 @@ public class ParameterController {
     }
 
     public SimulationParameters loadParametersFromFile(String filename) {
-        // Stub: delegate to FileHandler; actual parsing to be implemented later
+        validationErrors.clear();
         String raw = fileHandler.readConfig(filename);
         if (raw == null || raw.isEmpty()) {
+            validationErrors.add("Configuration file is empty or unreadable");
             return null;
         }
-        // TODO: parse raw into SimulationParameters; return null for now
-        return null;
+        SimulationParameters params = new SimulationParameters();
+        // Start from defaults to allow partial files
+        setDefaults(params);
+
+        String[] lines = raw.split("\n");
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (trimmed.isEmpty() || trimmed.startsWith("#")) continue;
+            int eq = trimmed.indexOf('=');
+            if (eq <= 0 || eq == trimmed.length() - 1) {
+                validationErrors.add("Invalid line: " + trimmed);
+                continue;
+            }
+            String key = trimmed.substring(0, eq).trim();
+            String val = trimmed.substring(eq + 1).trim();
+            try {
+                switch (key) {
+                    case "simDuration":
+                        params.setSimDuration(Double.parseDouble(val));
+                        break;
+                    case "numSources":
+                        params.setNumSources(Integer.parseInt(val));
+                        break;
+                    case "paretoAlpha":
+                        params.setParetoAlpha(Double.parseDouble(val));
+                        break;
+                    case "paretoMinVal":
+                        params.setParetoMinVal(Double.parseDouble(val));
+                        break;
+                    case "samplingInt":
+                        params.setSamplingInt(Double.parseDouble(val));
+                        break;
+                    case "seed":
+                        if (val.isEmpty() || val.equalsIgnoreCase("null")) {
+                            params.setSeed(null);
+                        } else {
+                            params.setSeed(Long.parseLong(val));
+                        }
+                        break;
+                    default:
+                        validationErrors.add("Unknown key: " + key);
+                }
+            } catch (NumberFormatException e) {
+                validationErrors.add("Invalid number for key '" + key + "': " + val);
+            }
+        }
+
+        // Validate parsed params
+        if (!validateParameters(params)) {
+            // retain validationErrors populated by validateParameters
+            return null;
+        }
+        return params;
     }
 
     public boolean saveParametersToFile(SimulationParameters params, String filename) {
-        // Stub: delegate to FileHandler; actual serialization to be implemented later
-        if (params == null) return false;
-        String serialized = ""; // TODO: serialize params to a simple key=value format
-        return fileHandler.writeConfig(filename, serialized);
+        if (params == null) {
+            validationErrors.clear();
+            validationErrors.add("Parameters object is null");
+            return false;
+        }
+        // Ensure parameters are valid before saving
+        if (!validateParameters(params)) {
+            return false;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("simDuration=").append(params.getSimDuration()).append('\n');
+        sb.append("numSources=").append(params.getNumSources()).append('\n');
+        sb.append("paretoAlpha=").append(params.getParetoAlpha()).append('\n');
+        sb.append("paretoMinVal=").append(params.getParetoMinVal()).append('\n');
+        sb.append("samplingInt=").append(params.getSamplingInt()).append('\n');
+        sb.append("seed=").append(params.getSeed() == null ? "" : params.getSeed()).append('\n');
+        return fileHandler.writeConfig(filename, sb.toString());
     }
 }
