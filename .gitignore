@@ -26,9 +26,6 @@ replay_pid*
 # Build outputs
 out/
 
-# Generated artifacts
-*.csv
-
 # Local build helper
 sources.txt
 
