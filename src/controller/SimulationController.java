@@ -8,6 +8,7 @@ import util.FileHandler;
 import java.util.List;
 import java.util.ArrayList;
 import model.Event;
+import model.TrafficModel;
 
 // Main controller that orchestrates the simulation process.
 public class SimulationController {
@@ -46,21 +47,26 @@ public class SimulationController {
             return false;
         }
         
-        trafficController.initializeSources(params);
-        eventController.processInitialEvents(trafficController.getTrafficSources());
+        trafficController.initializeTraffic(params);
+
+        if (params.getTrafficModel() == TrafficModel.ON_OFF) {
+            eventController.processInitialEvents(trafficController.getTrafficSources());
+        }
         
         // Main simulation loop
         double samplingInt = params.getSamplingInt();
         double nextSampleTime = 0.0;
         
         while (simulation.isRunning()) {
-            // Process all events up to current time
-            while (eventController.hasEvents() && 
-                   eventController.getEventQueue().peek() != null &&
-                   eventController.getEventQueue().peek().getTimestamp() <= simulation.getCurrTime()) {
-                Event nextEvent = eventController.getEventQueue().peek();
-                eventController.processNextEvent(trafficController.getTrafficSources());
-                eventLog.add(nextEvent);
+            // Add all events to an event log. Only applicable to event based models (e.g. ON_OFF).
+            if (params.getTrafficModel() == TrafficModel.ON_OFF){
+                while (eventController.hasEvents() && 
+                        eventController.getEventQueue().peek() != null &&
+                        eventController.getEventQueue().peek().getTimestamp() <= simulation.getCurrTime()) {
+                    Event nextEvent = eventController.getEventQueue().peek();
+                    eventController.processNextEvent(trafficController.getTrafficSources());
+                    eventLog.add(nextEvent);
+                }
             }
 
             // Sample traffic at intervals

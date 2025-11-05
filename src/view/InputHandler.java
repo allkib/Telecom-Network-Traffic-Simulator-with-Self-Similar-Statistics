@@ -5,6 +5,7 @@
  package view;
 
  import java.util.Scanner;
+ import model.TrafficModel;
 
  public class InputHandler {
     private final Scanner scanner = new Scanner(System.in);
@@ -47,6 +48,18 @@
                 return Long.parseLong(line);
             } catch (NumberFormatException e){
                 System.out.println("Invalid long. Try again (or press ENTER for random seed).");
+            }
+        }
+    }
+
+    public TrafficModel readTrafficModel(String prompt, TrafficModel defaultVal){
+        String defaultstr = defaultVal.toString();
+        while (true) {
+            String s = readLine(prompt, defaultstr);
+            try {
+                return TrafficModel.valueOf(s.toUpperCase());
+            } catch (IllegalArgumentException e){
+                System.out.println("Invalid traffic model. Try again (or press ENTER for default: " + defaultstr + ")");
             }
         }
     }

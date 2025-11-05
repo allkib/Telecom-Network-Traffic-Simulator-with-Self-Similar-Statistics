@@ -9,6 +9,8 @@ public class SimulationParameters {
     private double paretoMinVal;
     private double samplingInt;
     private Long seed; // optional; null means no fixed seed
+    private TrafficModel trafficModel;
+    private double hurstParameter;
 
     public SimulationParameters() {
     }
@@ -21,6 +23,8 @@ public class SimulationParameters {
         params.setParetoMinVal(1.0);
         params.setSamplingInt(1.0);
         params.setSeed(null);
+        params.setTrafficModel(TrafficModel.ON_OFF);
+        params.setHurstParameter(0.75);
         return params;
     }
 
@@ -52,6 +56,14 @@ public class SimulationParameters {
         return paretoMinVal;
     }
 
+    public TrafficModel getTrafficModel() {
+        return trafficModel;
+    }
+
+    public double getHurstParameter() {
+        return hurstParameter;
+    }
+
     public void setParetoMinVal(double paretoMinVal) {
         this.paretoMinVal = paretoMinVal;
     }
@@ -70,5 +82,13 @@ public class SimulationParameters {
 
     public void setSeed(Long seed) {
         this.seed = seed;
+    }
+
+    public void setTrafficModel(TrafficModel trafficModel) {
+        this.trafficModel = trafficModel;
+    }
+
+    public void setHurstParameter(double hurstParameter) {
+        this.hurstParameter = hurstParameter;
     }
 }

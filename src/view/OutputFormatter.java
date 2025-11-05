@@ -8,6 +8,7 @@
 
  public class OutputFormatter {
     public static void printSummary(TrafficStatistics stats) {
+        System.out.println();
         System.out.println("Traffic Statistics Summary:");
         System.out.println("---------------------------");
         System.out.println("Number of Samples: " + stats.getTimeSeries().size());
