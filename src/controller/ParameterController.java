@@ -68,29 +68,35 @@ public class ParameterController {
         return new ArrayList<>(validationErrors);
     }
 
-    public SimulationParameters loadParametersFromFile(String filename) {
+    /**
+     * @param paramsFile Main file with parameters that apply to both FGN and ON_OFF models
+     * @param profilesFile Secondary file with source profiles (only for ON_OFF model)
+     */
+
+    public SimulationParameters loadParametersFromFile(String paramsFile, String profilesFile) {
         validationErrors.clear();
-        String raw = fileHandler.readConfig(filename);
-        if (raw == null || raw.isEmpty()) {
-            validationErrors.add("Configuration file is empty or unreadable");
+
+        // Load main parameters for all models
+        String paramsCsv = fileHandler.readConfig(paramsFile);
+        if (paramsCsv == null || paramsCsv.isEmpty()) {
+            validationErrors.add("Parameters CSV is empty or could not be read");
             return null;
+        }
+
+        Map<String, String> configMap = new HashMap<>();
+        String[] lines = paramsCsv.split("\n");
+        for (int i = 1; i < lines.length; i++) {
+            String[] parts = lines[i].trim().split(",");
+            if (parts.length == 2) {
+                configMap.put(parts[0].trim(), parts[1].trim());
+            }
         }
 
         SimulationParameters params = new SimulationParameters();
         params.clearSourceProfiles();
 
-        Map<String, String> configMap = new HashMap<>();
-
-        for (String line : raw.split("\n")) {
-            String trimmed = line.trim();
-            if (trimmed.isEmpty() || trimmed.startsWith("#")) continue;
-            int eq = trimmed.indexOf('=');
-            if (eq > 0 && eq < trimmed.length() - 1) {
-                String key = trimmed.substring(0, eq).trim();
-                String val = trimmed.substring(eq + 1).trim();
-                configMap.put(key, val);
-            } 
-        }
+        TrafficModel model = TrafficModel.valueOf(configMap.getOrDefault("trafficModel", "ON_OFF").toUpperCase());
+        params.setTrafficModel(model);
 
         params.setSimDuration(Double.parseDouble(configMap.getOrDefault("simDuration", "1000.0")));
         params.setSamplingInt(Double.parseDouble(configMap.getOrDefault("samplingInt", "1.0")));
@@ -98,26 +104,35 @@ public class ParameterController {
             params.setSeed(Long.parseLong(configMap.get("seed")));
         }
 
-        TrafficModel model = TrafficModel.valueOf(configMap.getOrDefault("trafficModel", "ON_OFF").toUpperCase());
-        params.setTrafficModel(model);
-
-        if (model == TrafficModel.FGN) {
-            params.setHurstParameter(Double.parseDouble(configMap.getOrDefault("hurstParameter", "0.75")));
-        } else if (model == TrafficModel.ON_OFF) {
-            int numProfiles = Integer.parseInt(configMap.getOrDefault("numProfiles", "1"));
-            for (int i = 0; i < numProfiles; i++) {
-                String prefix = "profile" + (i + 1) + ".";
-                String name = configMap.getOrDefault(prefix + "name", "profile" + (i + 1));
-                int numSources = Integer.parseInt(configMap.getOrDefault(prefix + "numSources", "10"));
-                double onRate = Double.parseDouble(configMap.getOrDefault(prefix + "onRate", "1.0"));
-                double onAlpha = Double.parseDouble(configMap.getOrDefault(prefix + "onAlpha", "1.5"));
-                double onXm = Double.parseDouble(configMap.getOrDefault(prefix + "onXm", "1.0"));
-                double offAlpha = Double.parseDouble(configMap.getOrDefault(prefix + "offAlpha", "1.5"));
-                double offXm = Double.parseDouble(configMap.getOrDefault(prefix + "offXm", "1.0"));
-
-                SourceProfile profile = new SourceProfile(name, numSources, onRate, onAlpha, onXm, offAlpha, offXm);
-                params.addSourceProfile(profile);
+        // Load model-specific parameters
+        if (model == TrafficModel.ON_OFF) {
+            if (profilesFile == null) {
+                validationErrors.add("Source profiles file is required for ON_OFF model");
+                return null;
             }
+            String profilesCsv = fileHandler.readConfig(profilesFile);
+            if (profilesCsv.isEmpty()) {
+                validationErrors.add("Source profiles CSV is empty");
+                return null;
+            }
+            String[] profileLines = profilesCsv.split("\n");
+            for (int i = 1; i < profileLines.length; i++) {
+                String[] parts = profileLines[i].trim().split(",");
+                if (parts.length == 7) {
+                    SourceProfile profile = new SourceProfile(
+                        parts[0].trim(),
+                        Integer.parseInt(parts[1].trim()),
+                        Double.parseDouble(parts[2].trim()),
+                        Double.parseDouble(parts[3].trim()),
+                        Double.parseDouble(parts[4].trim()),
+                        Double.parseDouble(parts[5].trim()),
+                        Double.parseDouble(parts[6].trim())
+                    );
+                    params.addSourceProfile(profile);
+                }
+            }
+        } else if (model == TrafficModel.FGN) {
+            params.setHurstParameter(Double.parseDouble(configMap.getOrDefault("hurstParameter", "0.75")));
         }
 
         // Validate parsed params

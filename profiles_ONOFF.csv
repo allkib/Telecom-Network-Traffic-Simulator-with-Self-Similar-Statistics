@@ -1,0 +1,3 @@
+name,numberOfSources,onRate,onAlpha,onXm,offAlpha,offXm
+profile1,20,2.0,1.2,1.0,1.8,1.0
+profile2,30,0.5,1.6,0.5,1.4,0.5

@@ -1,0 +1,4 @@
+parameter,value
+simDuration,2000.0
+samplingInt,1.0
+seed,12345

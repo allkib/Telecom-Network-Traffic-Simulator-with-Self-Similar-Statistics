@@ -11,6 +11,7 @@ import controller.TrafficController;
 import model.SimulationParameters;
 import model.SourceProfile;
 import model.TrafficStatistics;
+import model.TrafficModel;
 
 public class ConsoleView {
     private final InputHandler input = new InputHandler();
@@ -49,11 +50,36 @@ public class ConsoleView {
     public SimulationParameters promptForParameters() {
         SimulationParameters params = SimulationParameters.defaults();
 
-            System.out.println("Welcome to the Telecom Traffic Simulation.");
-            System.out.println("Please enter simulation parameters. Or press Enter to use defaults.");
-            System.out.println("At any time, enter 'q', 'quit', or 'exit' to exit the simulation.");
-            System.out.println("------------------------------------");
+        System.out.println("Welcome to the Telecom Traffic Simulation.");
+        System.out.println("Please enter simulation parameters. Or press Enter to use defaults.");
+        System.out.println("At any time, enter 'q', 'quit', or 'exit' to exit the simulation.");
+        System.out.println("------------------------------------");
 
+        String readFileChoice = input.readLine("Load parameters from file? (y/n)", "n");
+
+        if (readFileChoice.equalsIgnoreCase("y")){
+            while (true){
+            
+                TrafficModel model = input.readTrafficModel("Which model do you want to load? (ON_OFF/FGN)", TrafficModel.ON_OFF);
+                SimulationParameters loadedParams = null;
+
+                if (model == TrafficModel.ON_OFF) {
+                    String paramsFile = input.readLine("Enter parameters file path", "params_ONOFF.csv");
+                    String profilesFile = input.readLine("Enter source profiles file path", "profiles_ONOFF.csv");
+                    loadedParams = paramController.loadParametersFromFile(paramsFile, profilesFile);
+                } else if (model == TrafficModel.FGN) {
+                    String paramsFile = input.readLine("Enter parameters file path", "params_FGN.csv");
+                    loadedParams = paramController.loadParametersFromFile(paramsFile, null);
+                }
+
+                if (loadedParams != null){
+                    return loadedParams;
+                } else {
+                    System.out.println("Failed to load parameters. Please try again.");
+                }
+            }
+            
+        } else {
             params.setSimDuration(input.readDouble("Total Simulation Duration", params.getSimDuration()));
             params.setSamplingInt(input.readDouble("Sampling Interval", params.getSamplingInt()));
             Long seed = input.readLongOrNull("Seed", params.getSeed());
@@ -63,7 +89,7 @@ public class ConsoleView {
 
             if (params.getTrafficModel() == model.TrafficModel.FGN) {
                 params.setHurstParameter(input.readDouble("Hurst Parameter", params.getHurstParameter()));
-            } else {
+            } else if (params.getTrafficModel() == model.TrafficModel.ON_OFF) {
                 params.clearSourceProfiles(); 
     
                 int numProfiles = input.readInt("Enter the number of source profiles", 1);
@@ -87,5 +113,6 @@ public class ConsoleView {
                 }
             }
             return params;
+        }
     }
  }
