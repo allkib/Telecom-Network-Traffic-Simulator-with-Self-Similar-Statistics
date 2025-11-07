@@ -74,11 +74,11 @@ import model.TrafficStatistics;
                     int numSources = input.readInt("Number of sources for this profile", 10);
                     double onRate = input.readDouble("ON rate for this profile", 1.0);
                     
-                    System.out.println("\n-- ON Period (Pareto) --");
+                    System.out.println("\nON Period (Pareto)");
                     double onAlpha = input.readDouble("ON period alpha", 1.5);
                     double onXm = input.readDouble("ON period xm", 1.0);
 
-                    System.out.println("\n-- OFF Period (Pareto) --");
+                    System.out.println("\nOFF Period (Pareto)");
                     double offAlpha = input.readDouble("OFF period alpha", 1.5);
                     double offXm = input.readDouble("OFF period xm", 1.0);
 
