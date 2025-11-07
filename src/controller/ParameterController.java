@@ -72,7 +72,6 @@ public class ParameterController {
      * @param paramsFile Main file with parameters that apply to both FGN and ON_OFF models
      * @param profilesFile Secondary file with source profiles (only for ON_OFF model)
      */
-
     public SimulationParameters loadParametersFromFile(String paramsFile, String profilesFile) {
         validationErrors.clear();
 
@@ -106,31 +105,7 @@ public class ParameterController {
 
         // Load model-specific parameters
         if (model == TrafficModel.ON_OFF) {
-            if (profilesFile == null) {
-                validationErrors.add("Source profiles file is required for ON_OFF model");
-                return null;
-            }
-            String profilesCsv = fileHandler.readConfig(profilesFile);
-            if (profilesCsv.isEmpty()) {
-                validationErrors.add("Source profiles CSV is empty");
-                return null;
-            }
-            String[] profileLines = profilesCsv.split("\n");
-            for (int i = 1; i < profileLines.length; i++) {
-                String[] parts = profileLines[i].trim().split(",");
-                if (parts.length == 7) {
-                    SourceProfile profile = new SourceProfile(
-                        parts[0].trim(),
-                        Integer.parseInt(parts[1].trim()),
-                        Double.parseDouble(parts[2].trim()),
-                        Double.parseDouble(parts[3].trim()),
-                        Double.parseDouble(parts[4].trim()),
-                        Double.parseDouble(parts[5].trim()),
-                        Double.parseDouble(parts[6].trim())
-                    );
-                    params.addSourceProfile(profile);
-                }
-            }
+            loadOnOffProfiles(params, profilesFile);
         } else if (model == TrafficModel.FGN) {
             params.setHurstParameter(Double.parseDouble(configMap.getOrDefault("hurstParameter", "0.75")));
         }
@@ -141,6 +116,33 @@ public class ParameterController {
             return null;
         }
         return params;
+    }
+
+    public void loadOnOffProfiles (SimulationParameters params, String profilesFile) {
+        if (profilesFile == null) {
+            validationErrors.add("Source profiles file is required for ON_OFF model");
+        }
+        String profilesCsv = fileHandler.readConfig(profilesFile);
+        if (profilesCsv.isEmpty()) {
+            validationErrors.add("Source profiles CSV is empty");
+        }
+        
+        String[] profileLines = profilesCsv.split("\n");
+        for (int i = 1; i < profileLines.length; i++) {
+            String[] parts = profileLines[i].trim().split(",");
+            if (parts.length == 7) {
+                SourceProfile profile = new SourceProfile(
+                    parts[0].trim(),
+                    Integer.parseInt(parts[1].trim()),
+                    Double.parseDouble(parts[2].trim()),
+                    Double.parseDouble(parts[3].trim()),
+                    Double.parseDouble(parts[4].trim()),
+                    Double.parseDouble(parts[5].trim()),
+                    Double.parseDouble(parts[6].trim())
+                );
+                params.addSourceProfile(profile);
+            }
+        }
     }
 
     public boolean saveParametersToFile(SimulationParameters params, String filename) {
