@@ -55,7 +55,7 @@ public class ConsoleView {
         System.out.println("At any time, enter 'q', 'quit', or 'exit' to exit the simulation.");
         System.out.println("------------------------------------");
 
-        String readFileChoice = input.readLine("Load parameters from file? (y/n)", "n");
+        String readFileChoice = input.readYesNo("Load parameters from file? (y/n)", "n");
 
         if (readFileChoice.equalsIgnoreCase("y")){
             while (true){
@@ -78,7 +78,7 @@ public class ConsoleView {
                     System.out.println("Failed to load parameters. Please try again.");
                 }
             }
-            
+
         } else {
             params.setSimDuration(input.readDouble("Total Simulation Duration", params.getSimDuration()));
             params.setSamplingInt(input.readDouble("Sampling Interval", params.getSamplingInt()));
