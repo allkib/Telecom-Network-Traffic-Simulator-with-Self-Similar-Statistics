@@ -9,7 +9,8 @@
  import controller.SimulationController;
  import controller.TrafficController;
  import model.SimulationParameters;
- import model.TrafficStatistics;
+import model.SourceProfile;
+import model.TrafficStatistics;
 
  public class ConsoleView {
     private final InputHandler input = new InputHandler();
@@ -63,11 +64,28 @@
             if (params.getTrafficModel() == model.TrafficModel.FGN) {
                 params.setHurstParameter(input.readDouble("Hurst Parameter", params.getHurstParameter()));
             } else {
-                params.setNumSources(input.readInt("Number of Traffic Sources", params.getNumSources()));
-                params.setParetoAlpha(input.readDouble("Pareto Alpha", params.getParetoAlpha()));
-                params.setParetoMinVal(input.readDouble("Pareto Minimum Value", params.getParetoMinVal()));
-            }
+                params.clearSourceProfiles(); 
+    
+                int numProfiles = input.readInt("Enter the number of source profiles", 1);
 
+                for (int i = 0; i < numProfiles; i++) {
+                    System.out.println("\n--- Configuring Source Profile " + (i + 1) + " ---");
+                    String name = input.readLine("Profile Name", "profile" + (i + 1));
+                    int numSources = input.readInt("Number of sources for this profile", 10);
+                    double onRate = input.readDouble("ON rate for this profile", 1.0);
+                    
+                    System.out.println("\n-- ON Period (Pareto) --");
+                    double onAlpha = input.readDouble("ON period alpha", 1.5);
+                    double onXm = input.readDouble("ON period xm", 1.0);
+
+                    System.out.println("\n-- OFF Period (Pareto) --");
+                    double offAlpha = input.readDouble("OFF period alpha", 1.5);
+                    double offXm = input.readDouble("OFF period xm", 1.0);
+
+                    SourceProfile profile = new SourceProfile(name, numSources, onRate, onAlpha, onXm, offAlpha, offXm);
+                    params.addSourceProfile(profile);
+                }
+            }
             return params;
     }
  }

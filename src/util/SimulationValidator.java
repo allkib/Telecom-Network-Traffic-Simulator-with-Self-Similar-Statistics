@@ -26,14 +26,28 @@ public class SimulationValidator {
         return samplingInt > 0.0;
     }
 
+    public boolean validateHurst(double hurst) {
+        return hurst > 0.5 && hurst < 1.0;
+    }
+
     public boolean validateAllParameters(SimulationParameters params) {
         if (params == null) return false;
         boolean ok = true;
         ok &= validateDuration(params.getSimDuration());
-        ok &= validateNumSources(params.getNumSources());
-        ok &= validateParetoAlpha(params.getParetoAlpha());
-        ok &= validateParetoMinValue(params.getParetoMinVal());
         ok &= validateSamplingInt(params.getSamplingInt());
+
+        if (params.getTrafficModel() == model.TrafficModel.ON_OFF) {
+            ok &= validateNumSources(params.getNumSources());
+            for (var profile : params.getSourceProfiles()) {
+                ok &= validateParetoAlpha(profile.getOnAlpha());
+                ok &= validateParetoAlpha(profile.getOffAlpha());
+                ok &= validateParetoMinValue(profile.getOnXm());
+                ok &= validateParetoMinValue(profile.getOffXm());
+            }
+        } else if (params.getTrafficModel() == model.TrafficModel.FGN) {
+            ok &= validateHurst(params.getHurstParameter());
+        }
+        
         return ok;
     }
 }

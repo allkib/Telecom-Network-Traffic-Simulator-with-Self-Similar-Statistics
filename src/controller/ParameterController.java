@@ -3,8 +3,12 @@ package controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import model.SimulationParameters;
+import model.SourceProfile;
+import model.TrafficModel;
 import util.FileHandler;
 import util.SimulationValidator;
 
@@ -18,11 +22,10 @@ public class ParameterController {
         if (params == null) return;
         SimulationParameters defaults = SimulationParameters.defaults();
         params.setSimDuration(defaults.getSimDuration());
-        params.setNumSources(defaults.getNumSources());
-        params.setParetoAlpha(defaults.getParetoAlpha());
-        params.setParetoMinVal(defaults.getParetoMinVal());
         params.setSamplingInt(defaults.getSamplingInt());
         params.setSeed(defaults.getSeed());
+        params.setTrafficModel(defaults.getTrafficModel());
+        params.setHurstParameter(defaults.getHurstParameter());
     }
 
     public boolean validateParameters(SimulationParameters params) {
@@ -36,17 +39,27 @@ public class ParameterController {
         if (!validator.validateDuration(params.getSimDuration())) {
             ok = false; validationErrors.add("simulationDuration must be > 0");
         }
-        if (!validator.validateNumSources(params.getNumSources())) {
-            ok = false; validationErrors.add("numSources must be > 0");
-        }
-        if (!validator.validateParetoAlpha(params.getParetoAlpha())) {
-            ok = false; validationErrors.add("paretoAlpha must be > 0");
-        }
-        if (!validator.validateParetoMinValue(params.getParetoMinVal())) {
-            ok = false; validationErrors.add("paretoMinVal must be > 0");
-        }
         if (!validator.validateSamplingInt(params.getSamplingInt())) {
             ok = false; validationErrors.add("samplingInt must be > 0");
+        }
+
+        if (params.getTrafficModel() == model.TrafficModel.ON_OFF) {
+            if (!validator.validateNumSources(params.getNumSources())) {
+                ok = false; validationErrors.add("Total number of sources must be > 0");
+            }
+
+            for (SourceProfile profile : params.getSourceProfiles()) {
+                if (!validator.validateParetoAlpha(profile.getOnAlpha()) || !validator.validateParetoAlpha(profile.getOffAlpha())) {
+                    ok = false; validationErrors.add("Pareto alphas must be > 0");
+                }
+                if (!validator.validateParetoMinValue(profile.getOnXm()) || !validator.validateParetoMinValue(profile.getOffXm())) {
+                    ok = false; validationErrors.add("Pareto xm must be > 0");
+                }
+            }
+        } else if (params.getTrafficModel() == model.TrafficModel.FGN) {
+            if (!validator.validateHurst(params.getHurstParameter())) {
+                ok = false; validationErrors.add("Hurst parameter must be in (0.5, 1.0)");
+            }
         }
         return ok;
     }
@@ -62,50 +75,48 @@ public class ParameterController {
             validationErrors.add("Configuration file is empty or unreadable");
             return null;
         }
-        SimulationParameters params = new SimulationParameters();
-        // Start from defaults to allow partial files
-        setDefaults(params);
 
-        String[] lines = raw.split("\n");
-        for (String line : lines) {
+        SimulationParameters params = new SimulationParameters();
+        params.clearSourceProfiles();
+
+        Map<String, String> configMap = new HashMap<>();
+
+        for (String line : raw.split("\n")) {
             String trimmed = line.trim();
             if (trimmed.isEmpty() || trimmed.startsWith("#")) continue;
             int eq = trimmed.indexOf('=');
-            if (eq <= 0 || eq == trimmed.length() - 1) {
-                validationErrors.add("Invalid line: " + trimmed);
-                continue;
-            }
-            String key = trimmed.substring(0, eq).trim();
-            String val = trimmed.substring(eq + 1).trim();
-            try {
-                switch (key) {
-                    case "simDuration":
-                        params.setSimDuration(Double.parseDouble(val));
-                        break;
-                    case "numSources":
-                        params.setNumSources(Integer.parseInt(val));
-                        break;
-                    case "paretoAlpha":
-                        params.setParetoAlpha(Double.parseDouble(val));
-                        break;
-                    case "paretoMinVal":
-                        params.setParetoMinVal(Double.parseDouble(val));
-                        break;
-                    case "samplingInt":
-                        params.setSamplingInt(Double.parseDouble(val));
-                        break;
-                    case "seed":
-                        if (val.isEmpty() || val.equalsIgnoreCase("null")) {
-                            params.setSeed(null);
-                        } else {
-                            params.setSeed(Long.parseLong(val));
-                        }
-                        break;
-                    default:
-                        validationErrors.add("Unknown key: " + key);
-                }
-            } catch (NumberFormatException e) {
-                validationErrors.add("Invalid number for key '" + key + "': " + val);
+            if (eq > 0 && eq < trimmed.length() - 1) {
+                String key = trimmed.substring(0, eq).trim();
+                String val = trimmed.substring(eq + 1).trim();
+                configMap.put(key, val);
+            } 
+        }
+
+        params.setSimDuration(Double.parseDouble(configMap.getOrDefault("simDuration", "1000.0")));
+        params.setSamplingInt(Double.parseDouble(configMap.getOrDefault("samplingInt", "1.0")));
+        if (configMap.containsKey("seed")) {
+            params.setSeed(Long.parseLong(configMap.get("seed")));
+        }
+
+        TrafficModel model = TrafficModel.valueOf(configMap.getOrDefault("trafficModel", "ON_OFF").toUpperCase());
+        params.setTrafficModel(model);
+
+        if (model == TrafficModel.FGN) {
+            params.setHurstParameter(Double.parseDouble(configMap.getOrDefault("hurstParameter", "0.75")));
+        } else if (model == TrafficModel.ON_OFF) {
+            int numProfiles = Integer.parseInt(configMap.getOrDefault("numProfiles", "1"));
+            for (int i = 0; i < numProfiles; i++) {
+                String prefix = "profile" + (i + 1) + ".";
+                String name = configMap.getOrDefault(prefix + "name", "profile" + (i + 1));
+                int numSources = Integer.parseInt(configMap.getOrDefault(prefix + "numSources", "10"));
+                double onRate = Double.parseDouble(configMap.getOrDefault(prefix + "onRate", "1.0"));
+                double onAlpha = Double.parseDouble(configMap.getOrDefault(prefix + "onAlpha", "1.5"));
+                double onXm = Double.parseDouble(configMap.getOrDefault(prefix + "onXm", "1.0"));
+                double offAlpha = Double.parseDouble(configMap.getOrDefault(prefix + "offAlpha", "1.5"));
+                double offXm = Double.parseDouble(configMap.getOrDefault(prefix + "offXm", "1.0"));
+
+                SourceProfile profile = new SourceProfile(name, numSources, onRate, onAlpha, onXm, offAlpha, offXm);
+                params.addSourceProfile(profile);
             }
         }
 
@@ -127,13 +138,31 @@ public class ParameterController {
         if (!validateParameters(params)) {
             return false;
         }
+
         StringBuilder sb = new StringBuilder();
         sb.append("simDuration=").append(params.getSimDuration()).append('\n');
-        sb.append("numSources=").append(params.getNumSources()).append('\n');
-        sb.append("paretoAlpha=").append(params.getParetoAlpha()).append('\n');
-        sb.append("paretoMinVal=").append(params.getParetoMinVal()).append('\n');
         sb.append("samplingInt=").append(params.getSamplingInt()).append('\n');
+        sb.append("trafficModel=").append(params.getTrafficModel().name()).append('\n');
         sb.append("seed=").append(params.getSeed() == null ? "" : params.getSeed()).append('\n');
+
+        if (params.getTrafficModel() == TrafficModel.ON_OFF) {
+            sb.append("numProfiles=").append(params.getSourceProfiles().size()).append('\n');
+            int profileIndex = 1;
+            for (SourceProfile profile : params.getSourceProfiles()) {
+                String prefix = "profile" + profileIndex + ".";
+                sb.append(prefix).append("name=").append(profile.getName()).append('\n');
+                sb.append(prefix).append("numSources=").append(profile.getNumberOfSources()).append('\n');
+                sb.append(prefix).append("onRate=").append(profile.getOnRate()).append('\n');
+                sb.append(prefix).append("onAlpha=").append(profile.getOnAlpha()).append('\n');
+                sb.append(prefix).append("onXm=").append(profile.getOnXm()).append('\n');
+                sb.append(prefix).append("offAlpha=").append(profile.getOffAlpha()).append('\n');
+                sb.append(prefix).append("offXm=").append(profile.getOffXm()).append('\n');
+                profileIndex++;
+            }
+        } else if (params.getTrafficModel() == TrafficModel.FGN) {
+            sb.append("hurstParameter=").append(params.getHurstParameter()).append('\n');
+        }
+
         return fileHandler.writeConfig(filename, sb.toString());
     }
 }

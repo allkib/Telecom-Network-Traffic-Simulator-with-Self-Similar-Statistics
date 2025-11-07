@@ -15,6 +15,7 @@
  import model.TrafficSource;
  import model.SimulationParameters;
  import model.TrafficModel;
+ import model.SourceProfile;
  import util.RandomNumberGenerator;
  import util.FractionalGaussianNoiseGenerator;
 
@@ -43,26 +44,21 @@ public class TrafficController {
     public void initializeOnOffSources(SimulationParameters params) {
         sources.clear();
 
-        if (params.getNumSources() <= 0) {
-            throw new IllegalArgumentException("Number of sources must be positive");
-        }
-
-        final int n = params.getNumSources();
-        final double xm = params.getParetoMinVal();
-        final double alpha = params.getParetoAlpha();
         final Long seed = params.getSeed();
+        int sourceIDCounter = 0;
 
-        Distribution onDist = new ParetoDistribution(xm, alpha);
-        Distribution offDist = new ParetoDistribution(xm, alpha);
+        for (SourceProfile profile : params.getSourceProfiles()) {
+            Distribution onDist = new ParetoDistribution(profile.getOnXm(), profile.getOnAlpha());
+            Distribution offDist = new ParetoDistribution(profile.getOffXm(), profile.getOffAlpha());
 
-        final double onRate = 1.0;
+            for (int i = 0; i < profile.getNumberOfSources(); i++) {
+                Long seedPerSource = (seed == null) ? null : (seed + sourceIDCounter);
+                RandomNumberGenerator rng = new RandomNumberGenerator(seedPerSource);
 
-        for (int i  = 0; i < n; i++) {
-            Long seedPerSource = (seed == null) ? null : (seed + i);
-            RandomNumberGenerator rng = new RandomNumberGenerator(seedPerSource);
-
-            TrafficSource src = new TrafficSource(i, onDist, offDist, rng, onRate);
-            sources.add(src);
+                TrafficSource src = new TrafficSource(sourceIDCounter, onDist, offDist, rng, profile.getOnRate());
+                sources.add(src);
+                sourceIDCounter++;
+            }
         }
     }
 

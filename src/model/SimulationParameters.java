@@ -1,33 +1,44 @@
 // All
 package model;
 
+import java.util.List;
+
 // Model for simulation parameters
 public class SimulationParameters {
     private double simDuration;
-    private int numSources;
-    private double paretoAlpha;
-    private double paretoMinVal;
     private double samplingInt;
     private Long seed; // optional; null means no fixed seed
     private TrafficModel trafficModel;
     private double hurstParameter;
+    private List<SourceProfile> sourceProfiles;
 
     public SimulationParameters() {
+        this.sourceProfiles = new java.util.ArrayList<>();
     }
 
     public static SimulationParameters defaults() {
         SimulationParameters params = new SimulationParameters();
         params.setSimDuration(1000.0);
-        params.setNumSources(100);
-        params.setParetoAlpha(1.5);
-        params.setParetoMinVal(1.0);
         params.setSamplingInt(1.0);
         params.setSeed(null);
         params.setTrafficModel(TrafficModel.ON_OFF);
         params.setHurstParameter(0.75);
+        params.addSourceProfile(new SourceProfile("Default Profile", 10, 0.1, 1.5, 1.0, 1.5, 1.0));
         return params;
     }
 
+    public List<SourceProfile> getSourceProfiles() {
+        return sourceProfiles;
+    }
+
+    public void addSourceProfile(SourceProfile profile) {
+        this.sourceProfiles.add(profile);
+    }
+
+    public void clearSourceProfiles() {
+        this.sourceProfiles.clear();
+    }
+    
     public double getSimDuration() {
         return simDuration;
     }
@@ -37,23 +48,8 @@ public class SimulationParameters {
     }
 
     public int getNumSources() {
-        return numSources;
-    }
-
-    public void setNumSources(int numSources) {
-        this.numSources = numSources;
-    }
-
-    public double getParetoAlpha() {
-        return paretoAlpha;
-    }
-
-    public void setParetoAlpha(double paretoAlpha) {
-        this.paretoAlpha = paretoAlpha;
-    }
-
-    public double getParetoMinVal() {
-        return paretoMinVal;
+        if (sourceProfiles == null) return 0;
+        return sourceProfiles.stream().mapToInt(SourceProfile::getNumberOfSources).sum();
     }
 
     public TrafficModel getTrafficModel() {
@@ -62,10 +58,6 @@ public class SimulationParameters {
 
     public double getHurstParameter() {
         return hurstParameter;
-    }
-
-    public void setParetoMinVal(double paretoMinVal) {
-        this.paretoMinVal = paretoMinVal;
     }
 
     public double getSamplingInt() {
