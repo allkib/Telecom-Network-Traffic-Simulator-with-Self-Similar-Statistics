@@ -2,17 +2,17 @@
  * @author: Clarence
  */
 
- package view;
+package view;
 
- import controller.EventController;
- import controller.ParameterController;
- import controller.SimulationController;
- import controller.TrafficController;
- import model.SimulationParameters;
+import controller.EventController;
+import controller.ParameterController;
+import controller.SimulationController;
+import controller.TrafficController;
+import model.SimulationParameters;
 import model.SourceProfile;
 import model.TrafficStatistics;
 
- public class ConsoleView {
+public class ConsoleView {
     private final InputHandler input = new InputHandler();
     private final ParameterController paramController = new ParameterController();
     private final SimulationController simController;

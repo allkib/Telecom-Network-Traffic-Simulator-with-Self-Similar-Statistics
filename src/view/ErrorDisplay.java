@@ -2,11 +2,11 @@
  * @author: Clarence
  */
 
- package view;
+package view;
 
- import java.util.List;
+import java.util.List;
 
- public class ErrorDisplay {
+public class ErrorDisplay {
     public static void printValidationErrors(List<String> errors) {
         if (errors == null || errors.isEmpty()) return;
         System.out.println("Input Validation Errors:");

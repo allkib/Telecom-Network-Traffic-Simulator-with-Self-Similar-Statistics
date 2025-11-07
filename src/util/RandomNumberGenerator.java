@@ -5,10 +5,10 @@
  * Inverse transform sampling is used. 
  */
 
- package util;
+package util;
 
- import java.util.Random;
- public class RandomNumberGenerator {
+import java.util.Random;
+public class RandomNumberGenerator {
     private final Random rnd;
 
     public RandomNumberGenerator(Long seed) {

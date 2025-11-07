@@ -4,20 +4,20 @@
  * Manages TrafficSource objects and provide aggregate traffic.
  */
 
- package controller;
+package controller;
 
- import java.util.ArrayList;
- import java.util.List;
- import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Arrays;
 
- import model.Distribution;
- import model.ParetoDistribution;
- import model.TrafficSource;
- import model.SimulationParameters;
- import model.TrafficModel;
- import model.SourceProfile;
- import util.RandomNumberGenerator;
- import util.FractionalGaussianNoiseGenerator;
+import model.Distribution;
+import model.ParetoDistribution;
+import model.TrafficSource;
+import model.SimulationParameters;
+import model.TrafficModel;
+import model.SourceProfile;
+import util.RandomNumberGenerator;
+import util.FractionalGaussianNoiseGenerator;
 
 public class TrafficController {
 

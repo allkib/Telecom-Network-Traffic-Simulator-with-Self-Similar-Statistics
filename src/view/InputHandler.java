@@ -2,12 +2,12 @@
  * @author: Clarence
  */
 
- package view;
+package view;
 
- import java.util.Scanner;
- import model.TrafficModel;
+import java.util.Scanner;
+import model.TrafficModel;
 
- public class InputHandler {
+public class InputHandler {
     private final Scanner scanner = new Scanner(System.in);
 
     public int readInt(String prompt, int defaultVal){

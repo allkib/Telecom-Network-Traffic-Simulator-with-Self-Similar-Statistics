@@ -2,11 +2,11 @@
  * @author: Clarence
  */
 
- package view;
+package view;
 
- import model.TrafficStatistics;
+import model.TrafficStatistics;
 
- public class OutputFormatter {
+public class OutputFormatter {
     public static void printSummary(TrafficStatistics stats) {
         System.out.println();
         System.out.println("Traffic Statistics Summary:");
