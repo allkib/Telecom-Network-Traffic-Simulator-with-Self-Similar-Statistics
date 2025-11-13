@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ParetoTest {
 
+    // A fake RNG that returns predetermined values for testing.
     static class TestRNG extends RandomNumberGenerator {
         private final double[] values;
         private int idx = 0;
