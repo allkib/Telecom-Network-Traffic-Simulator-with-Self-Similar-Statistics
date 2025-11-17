@@ -6,22 +6,53 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 // File handler utility 
 public class FileHandler {
-    public boolean writeAggregateTrafficCSV(String filename, java.util.List<Double> timeSeries) {
+    public boolean writeAggregateTrafficCSV(String filename, java.util.List<Double> timeSeries, 
+                                            double samplingInterval, boolean includeMetadata, 
+                                            model.SimulationParameters params) {
         if (filename == null || filename.isEmpty() || timeSeries == null) return false;
         Path path = Paths.get(filename);
         try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-            // Simple one-value-per-line CSV
-            for (Double v : timeSeries) {
-                writer.write(v == null ? "" : v.toString());
+            // Write metadata header if requested
+            if (includeMetadata) {
+                writer.write("# Aggregate Traffic Rate CSV");
                 writer.newLine();
+                writer.write("# Generated: " + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                writer.newLine();
+                if (params != null) {
+                    writer.write("# Simulation Duration: " + params.getSimDuration());
+                    writer.newLine();
+                    writer.write("# Number of Sources: " + params.getNumSources());
+                    writer.newLine();
+                    writer.write("# Sampling Interval: " + params.getSamplingInt());
+                    writer.newLine();
+                }
+                writer.write("# Sample Count: " + timeSeries.size());
+                writer.newLine();
+            }
+            
+            writer.write("Time,TrafficRate");
+            writer.newLine();
+            
+            double currentTime = 0.0;
+            for (Double v : timeSeries) {
+                writer.write(String.format("%.6f,%.6f", currentTime, v == null ? 0.0 : v));
+                writer.newLine();
+                currentTime += samplingInterval;
             }
             return true;
         } catch (IOException e) {
             return false;
         }
+    }
+    
+    public boolean writeAggregateTrafficCSV(String filename, java.util.List<Double> timeSeries) {
+        // Default: no metadata, assume sampling interval of 1.0
+        return writeAggregateTrafficCSV(filename, timeSeries, 1.0, false, null);
     }
 
     public boolean writeEventLogCSV(String filename, java.util.List<model.Event> log) {

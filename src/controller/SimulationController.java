@@ -99,10 +99,13 @@ public class SimulationController {
         // Calculate final statistics
         simulation.getStats().calculateStatistics();
         
-        // Export CSV (aggregate traffic only)
-        fileHandler.writeAggregateTrafficCSV("Aggregate_Traffic.csv", simulation.getStats().getTimeSeries());
+        // Export CSV with timestamps and metadata
+        fileHandler.writeAggregateTrafficCSV("Aggregate_Traffic.csv", 
+            simulation.getStats().getTimeSeries(), 
+            params.getSamplingInt(), 
+            true, 
+            params);
         fileHandler.writeEventLogCSV("Event_Log.csv", eventLog);
-        // Stop simulation
         simulation.stop();
         return true;
     }
