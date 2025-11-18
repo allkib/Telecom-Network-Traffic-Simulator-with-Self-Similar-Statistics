@@ -1,10 +1,11 @@
 /**
- * @author: Clarence
+ * @author: Clarence & All
  */
 
 package view;
 
 import model.TrafficStatistics;
+import model.QueueStatistics;
 
 public class OutputFormatter {
     public static void printSummary(TrafficStatistics stats) {
@@ -37,6 +38,23 @@ public class OutputFormatter {
             System.out.println("  Traffic is RANDOM (H ≈ 0.5)");
             System.out.println("  No significant self-similarity detected.");
         }
+        System.out.println();
+    }
+
+    public static void printQueueStatistics(QueueStatistics stats) {
+        if (stats == null) {
+            System.out.println("Queue statistics unavailable.");
+            return;
+        }
+
+        System.out.println();
+        System.out.println("Queue Statistics:");
+        System.out.println("-----------------");
+        System.out.println("Average Queue Length: " + String.format("%.4f", stats.getAvgQueueLen()));
+        System.out.println("Peak Queue Length: " + String.format("%.4f", stats.getMaxQueueLen()));
+        System.out.println("Overflow Count: " + stats.getOverflowCount());
+        System.out.println("Overflow Percentage: " + String.format("%.2f%%", stats.getOverflowPercent()));
+        System.out.println("Total Arrivals: " + String.format("%.2f", stats.getTotalArrivals()));
         System.out.println();
     }
 }
