@@ -11,14 +11,13 @@ public class HurstParameterCalculator {
     
     public double calculateHurstRS(List<Double> timeSeries) {
         if (timeSeries == null || timeSeries.size() < 10) {
-            return 0.5; // Default to random if insufficient data
+            return 0.5;
         }
         
         int n = timeSeries.size();
-        int maxWindowSize = Math.min(n / 4, 100); // Use up to 1/4 of data, max 100
-        int minWindowSize = Math.max(4, n / 50); // Minimum window size
+        int maxWindowSize = Math.min(n / 4, 100);
+        int minWindowSize = Math.max(4, n / 50);
         
-        // Store log(R/S) and log(window size) for linear regression
         List<Double> logRS = new java.util.ArrayList<>();
         List<Double> logN = new java.util.ArrayList<>();
         
@@ -45,7 +44,6 @@ public class HurstParameterCalculator {
         double sumRS = 0.0;
         int validWindows = 0;
         
-        // Calculate R/S for each window and average
         for (int i = 0; i < numWindows; i++) {
             int start = i * windowSize;
             int end = Math.min(start + windowSize, n);
@@ -69,7 +67,6 @@ public class HurstParameterCalculator {
         }
         mean /= series.size();
         
-        // Calculate deviations from mean and cumulative deviations
         double[] deviations = new double[series.size()];
         double[] cumulative = new double[series.size()];
         
@@ -78,7 +75,6 @@ public class HurstParameterCalculator {
             cumulative[i] = (i == 0) ? deviations[i] : cumulative[i-1] + deviations[i];
         }
         
-        // Calculate range R
         double minCum = cumulative[0];
         double maxCum = cumulative[0];
         for (double c : cumulative) {
@@ -87,7 +83,6 @@ public class HurstParameterCalculator {
         }
         double R = maxCum - minCum;
         
-        // Calculate standard deviation S
         double variance = 0.0;
         for (double d : deviations) {
             variance += d * d;
@@ -119,15 +114,83 @@ public class HurstParameterCalculator {
             sumX2 += xi * xi;
         }
         
-        // Slope = (n*sumXY - sumX*sumY) / (n*sumX2 - sumX*sumX)
         double denominator = n * sumX2 - sumX * sumX;
         if (Math.abs(denominator) < 1e-10) {
-            return 0.5; // Avoid division by zero
+            return 0.5;
         }
         
         double slope = (n * sumXY - sumX * sumY) / denominator;
         
         return Math.max(0.0, Math.min(1.0, slope));
+    }
+    
+    // Calculates Hurst parameter using variance-time plot method
+    // Aggregates data at different scales, calculates variance, fits log-log plot
+    public double calculateHurstVariance(List<Double> timeSeries) {
+        if (timeSeries == null || timeSeries.size() < 10) {
+            return 0.5;
+        }
+        
+        int n = timeSeries.size();
+        int maxAggregation = Math.min(n / 4, 64);
+        int minAggregation = 2;
+        
+        List<Double> logVariance = new java.util.ArrayList<>();
+        List<Double> logM = new java.util.ArrayList<>();
+        
+        for (int m = minAggregation; m <= maxAggregation; m *= 2) {
+            double variance = calculateVarianceForAggregation(timeSeries, m);
+            if (variance > 0 && Double.isFinite(variance)) {
+                logVariance.add(Math.log(variance));
+                logM.add(Math.log(m));
+            }
+        }
+        
+        if (logVariance.size() < 2) {
+            return 0.5;
+        }
+        
+        // Slope = 2H - 2, so H = (slope + 2) / 2
+        double slope = calculateSlope(logM, logVariance);
+        double h = (slope + 2.0) / 2.0;
+        
+        return Math.max(0.0, Math.min(1.0, h));
+    }
+    
+    // Calculates variance of aggregated time-series (averages m consecutive values)
+    private double calculateVarianceForAggregation(List<Double> timeSeries, int m) {
+        int n = timeSeries.size();
+        int numAggregated = n / m;
+        if (numAggregated < 2) return 0.0;
+        
+        List<Double> aggregated = new java.util.ArrayList<>();
+        for (int i = 0; i < numAggregated; i++) {
+            double sum = 0.0;
+            for (int j = 0; j < m; j++) {
+                int idx = i * m + j;
+                if (idx < n) {
+                    sum += timeSeries.get(idx);
+                }
+            }
+            aggregated.add(sum / m);
+        }
+        
+        if (aggregated.isEmpty()) return 0.0;
+        
+        double mean = 0.0;
+        for (Double value : aggregated) {
+            mean += value;
+        }
+        mean /= aggregated.size();
+        
+        double variance = 0.0;
+        for (Double value : aggregated) {
+            double diff = value - mean;
+            variance += diff * diff;
+        }
+        variance /= aggregated.size();
+        
+        return variance;
     }
     
     public boolean isSelfSimilar(double hurstParameter) {

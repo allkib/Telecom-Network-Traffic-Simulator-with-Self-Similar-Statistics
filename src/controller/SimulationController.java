@@ -5,6 +5,8 @@ import model.Simulation;
 import model.SimulationParameters;
 import model.TrafficStatistics;
 import util.FileHandler;
+import util.HurstParameterCalculator;
+import view.OutputFormatter;
 import java.util.List;
 import java.util.ArrayList;
 import model.Event;
@@ -98,6 +100,25 @@ public class SimulationController {
         
         // Calculate final statistics
         simulation.getStats().calculateStatistics();
+        
+        HurstParameterCalculator hurstCalculator = new HurstParameterCalculator();
+        List<Double> timeSeries = simulation.getStats().getTimeSeries();
+        
+        if (timeSeries.size() >= 10) {
+            // Use R/S analysis as primary method
+            double hRS = hurstCalculator.calculateHurstRS(timeSeries);
+            boolean isSelfSimilar = hurstCalculator.isSelfSimilar(hRS);
+            String confidence = hurstCalculator.getConfidenceLevel(hRS);
+            
+            OutputFormatter.printHurstParameter(hRS, "R/S Analysis", isSelfSimilar, confidence);
+            
+            double hVar = hurstCalculator.calculateHurstVariance(timeSeries);
+            if (Math.abs(hRS - hVar) > 0.1) {
+                // If methods disagree significantly, show both
+                System.out.println("Note: Variance-Time method gives H = " + String.format("%.4f", hVar));
+                System.out.println("      (R/S method used as primary estimate)");
+            }
+        }
         
         // Export CSV with timestamps and metadata
         fileHandler.writeAggregateTrafficCSV("Aggregate_Traffic.csv", 
