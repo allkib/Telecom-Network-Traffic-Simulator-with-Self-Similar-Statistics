@@ -42,6 +42,7 @@ public class ConsoleView {
             TrafficStatistics resultStats = simController.getResults();
             System.out.println("Simulation completed successfully.");
             OutputFormatter.printSummary(resultStats);
+            OutputFormatter.printQueueStatistics(simController.getQueueStatistics());
         } catch (QuitHandler qh) {
             System.out.println("Exiting simulation.");
         }
@@ -82,6 +83,8 @@ public class ConsoleView {
         } else {
             params.setSimDuration(input.readDouble("Total Simulation Duration", params.getSimDuration()));
             params.setSamplingInt(input.readDouble("Sampling Interval", params.getSamplingInt()));
+            params.setQueueBufferSize(input.readInt("Queue buffer size", params.getQueueBufferSize()));
+            params.setQueueServiceRate(input.readDouble("Queue service rate (packets per time unit)", params.getQueueServiceRate()));
             Long seed = input.readLongOrNull("Seed", params.getSeed());
             params.setSeed(seed);
 

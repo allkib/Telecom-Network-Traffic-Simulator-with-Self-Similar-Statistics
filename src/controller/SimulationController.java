@@ -4,6 +4,8 @@ package controller;
 import model.Simulation;
 import model.SimulationParameters;
 import model.TrafficStatistics;
+import model.NetworkQueue;
+import model.QueueStatistics;
 import util.FileHandler;
 import util.HurstParameterCalculator;
 import view.OutputFormatter;
@@ -19,6 +21,8 @@ public class SimulationController {
     private EventController eventController;
     private TrafficController trafficController;
     private final FileHandler fileHandler = new FileHandler();
+    private NetworkQueue networkQueue;
+    private QueueStatistics latestQueueStats;
     
     public SimulationController() {
         this.simulation = new Simulation();
@@ -50,6 +54,8 @@ public class SimulationController {
         }
         
         trafficController.initializeTraffic(params);
+        networkQueue = new NetworkQueue(params.getQueueBufferSize(), params.getQueueServiceRate());
+        networkQueue.reset();
 
         if (params.getTrafficModel() == TrafficModel.ON_OFF) {
             eventController.processInitialEvents(trafficController.getTrafficSources());
@@ -71,9 +77,10 @@ public class SimulationController {
                 }
             }
 
+            double aggregateTraffic = trafficController.calculateAggregateTraffic(simulation.getCurrTime());
+
             // Sample traffic at intervals
             if (simulation.getCurrTime() >= nextSampleTime) {
-                double aggregateTraffic = trafficController.calculateAggregateTraffic(simulation.getCurrTime());
                 simulation.getStats().addMeasurement(simulation.getCurrTime(), aggregateTraffic);
                 nextSampleTime += samplingInt;
             }
@@ -95,6 +102,7 @@ public class SimulationController {
             if (timeStep <= 0) {
                 timeStep = Math.max(1e-6, samplingInt / 1000.0);
             }
+            networkQueue.processArrival(aggregateTraffic, timeStep);
             simulation.tick(timeStep);
         }
         
@@ -111,22 +119,17 @@ public class SimulationController {
             String confidence = hurstCalculator.getConfidenceLevel(hRS);
             
             OutputFormatter.printHurstParameter(hRS, "R/S Analysis", isSelfSimilar, confidence);
-            
-            double hVar = hurstCalculator.calculateHurstVariance(timeSeries);
-            if (Math.abs(hRS - hVar) > 0.1) {
-                // If methods disagree significantly, show both
-                System.out.println("Note: Variance-Time method gives H = " + String.format("%.4f", hVar));
-                System.out.println("      (R/S method used as primary estimate)");
-            }
         }
         
-        // Export CSV with timestamps and metadata
+        latestQueueStats = networkQueue.getStats();
+        OutputFormatter.printQueueStatistics(latestQueueStats);
         fileHandler.writeAggregateTrafficCSV("Aggregate_Traffic.csv", 
             simulation.getStats().getTimeSeries(), 
             params.getSamplingInt(), 
             true, 
             params);
         fileHandler.writeEventLogCSV("Event_Log.csv", eventLog);
+        fileHandler.writeQueueStatsCSV("Queue_Stats.csv", latestQueueStats);
         simulation.stop();
         return true;
     }
@@ -137,5 +140,9 @@ public class SimulationController {
     
     public boolean isRunning() {
         return simulation.isRunning();
+    }
+
+    public QueueStatistics getQueueStatistics() {
+        return latestQueueStats;
     }
 }

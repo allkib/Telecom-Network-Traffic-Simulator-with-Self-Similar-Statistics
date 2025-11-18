@@ -26,6 +26,8 @@ public class ParameterController {
         params.setSeed(defaults.getSeed());
         params.setTrafficModel(defaults.getTrafficModel());
         params.setHurstParameter(defaults.getHurstParameter());
+        params.setQueueBufferSize(defaults.getQueueBufferSize());
+        params.setQueueServiceRate(defaults.getQueueServiceRate());
     }
 
     public boolean validateParameters(SimulationParameters params) {
@@ -41,6 +43,12 @@ public class ParameterController {
         }
         if (!validator.validateSamplingInt(params.getSamplingInt())) {
             ok = false; validationErrors.add("samplingInt must be > 0");
+        }
+        if (!validator.validateQueueBuffer(params.getQueueBufferSize())) {
+            ok = false; validationErrors.add("queueBufferSize must be > 0");
+        }
+        if (!validator.validateQueueServiceRate(params.getQueueServiceRate())) {
+            ok = false; validationErrors.add("queueServiceRate must be > 0");
         }
 
         if (params.getTrafficModel() == model.TrafficModel.ON_OFF) {
@@ -99,6 +107,8 @@ public class ParameterController {
 
         params.setSimDuration(Double.parseDouble(configMap.getOrDefault("simDuration", "1000.0")));
         params.setSamplingInt(Double.parseDouble(configMap.getOrDefault("samplingInt", "1.0")));
+        params.setQueueBufferSize(Integer.parseInt(configMap.getOrDefault("queueBufferSize", "1000")));
+        params.setQueueServiceRate(Double.parseDouble(configMap.getOrDefault("queueServiceRate", "50.0")));
         if (configMap.containsKey("seed")) {
             params.setSeed(Long.parseLong(configMap.get("seed")));
         }
@@ -160,6 +170,8 @@ public class ParameterController {
         sb.append("simDuration=").append(params.getSimDuration()).append('\n');
         sb.append("samplingInt=").append(params.getSamplingInt()).append('\n');
         sb.append("trafficModel=").append(params.getTrafficModel().name()).append('\n');
+        sb.append("queueBufferSize=").append(params.getQueueBufferSize()).append('\n');
+        sb.append("queueServiceRate=").append(params.getQueueServiceRate()).append('\n');
         sb.append("seed=").append(params.getSeed() == null ? "" : params.getSeed()).append('\n');
 
         if (params.getTrafficModel() == TrafficModel.ON_OFF) {

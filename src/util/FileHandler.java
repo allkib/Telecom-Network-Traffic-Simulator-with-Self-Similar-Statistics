@@ -71,6 +71,28 @@ public class FileHandler {
         }
     }
 
+    public boolean writeQueueStatsCSV(String filename, model.QueueStatistics stats) {
+        if (filename == null || filename.isEmpty() || stats == null) return false;
+        Path path = Paths.get(filename);
+        try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+            writer.write("Metric,Value");
+            writer.newLine();
+            writer.write("Average Queue Length," + String.format("%.6f", stats.getAvgQueueLen()));
+            writer.newLine();
+            writer.write("Peak Queue Length," + String.format("%.6f", stats.getMaxQueueLen()));
+            writer.newLine();
+            writer.write("Overflow Count," + stats.getOverflowCount());
+            writer.newLine();
+            writer.write("Overflow Percentage ( % )," + String.format("%.4f", stats.getOverflowPercent()));
+            writer.newLine();
+            writer.write("Total Arrivals," + String.format("%.6f", stats.getTotalArrivals()));
+            writer.newLine();
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
     public String readConfig(String filename) {
         if (filename == null || filename.isEmpty()) return null;
         Path path = Paths.get(filename);

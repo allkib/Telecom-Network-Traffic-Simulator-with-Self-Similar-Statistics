@@ -26,6 +26,14 @@ public class SimulationValidator {
         return samplingInt > 0.0;
     }
 
+    public boolean validateQueueBuffer(int bufferSize) {
+        return bufferSize > 0;
+    }
+
+    public boolean validateQueueServiceRate(double serviceRate) {
+        return serviceRate > 0.0;
+    }
+
     public boolean validateHurst(double hurst) {
         return hurst > 0.5 && hurst < 1.0;
     }
@@ -35,6 +43,8 @@ public class SimulationValidator {
         boolean ok = true;
         ok &= validateDuration(params.getSimDuration());
         ok &= validateSamplingInt(params.getSamplingInt());
+        ok &= validateQueueBuffer(params.getQueueBufferSize());
+        ok &= validateQueueServiceRate(params.getQueueServiceRate());
 
         if (params.getTrafficModel() == model.TrafficModel.ON_OFF) {
             ok &= validateNumSources(params.getNumSources());

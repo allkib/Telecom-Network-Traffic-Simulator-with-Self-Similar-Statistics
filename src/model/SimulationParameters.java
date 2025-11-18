@@ -11,6 +11,8 @@ public class SimulationParameters {
     private TrafficModel trafficModel;
     private double hurstParameter;
     private List<SourceProfile> sourceProfiles;
+    private int queueBufferSize;
+    private double queueServiceRate;
 
     public SimulationParameters() {
         this.sourceProfiles = new java.util.ArrayList<>();
@@ -24,6 +26,8 @@ public class SimulationParameters {
         params.setTrafficModel(TrafficModel.ON_OFF);
         params.setHurstParameter(0.75);
         params.addSourceProfile(new SourceProfile("Default Profile", 10, 0.1, 1.5, 1.0, 1.5, 1.0));
+        params.setQueueBufferSize(1000);
+        params.setQueueServiceRate(50.0);
         return params;
     }
 
@@ -82,5 +86,21 @@ public class SimulationParameters {
 
     public void setHurstParameter(double hurstParameter) {
         this.hurstParameter = hurstParameter;
+    }
+
+    public int getQueueBufferSize() {
+        return queueBufferSize;
+    }
+
+    public void setQueueBufferSize(int queueBufferSize) {
+        this.queueBufferSize = queueBufferSize;
+    }
+
+    public double getQueueServiceRate() {
+        return queueServiceRate;
+    }
+
+    public void setQueueServiceRate(double queueServiceRate) {
+        this.queueServiceRate = queueServiceRate;
     }
 }
