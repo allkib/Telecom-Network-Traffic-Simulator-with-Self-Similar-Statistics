@@ -2,6 +2,9 @@
  *  @author: Clarence
  * 
  * Manages event flow
+ * 
+ * @processInitialEvents: for each traffic source, create its initial event and add this event to the event queue
+ * @processNextEvent: pop the next event from the event queue, apply it to the corresponding Traffic Source, then create and add the next event for that source
  */
 
 package controller;
@@ -24,7 +27,6 @@ public class EventController {
         return queue;
     }
 
-    // For each TrafficSource, create its initial event and add this event to the event queue
     public void processInitialEvents(List<TrafficSource> sources){
         if (sources == null) {
             throw new IllegalArgumentException("Sources list is null");
@@ -40,7 +42,6 @@ public class EventController {
 
     }
 
-    // Pop event and apply it to the corresponding Traffic Source, then create and add the next event for that source
     public void processNextEvent(List<TrafficSource> sources) {
         if (queue.isEmpty()) return;
         Event e = queue.poll();
