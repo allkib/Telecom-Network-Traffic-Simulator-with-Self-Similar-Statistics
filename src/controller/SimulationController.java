@@ -14,7 +14,12 @@ import java.util.ArrayList;
 import model.Event;
 import model.TrafficModel;
 
-// Main controller that orchestrates the simulation process.
+/**
+ * Main controller that orchestrates the simulation process.
+ * Coordinates simulation execution, event processing, and result generation.
+ * 
+ * @author All
+ */
 public class SimulationController {
     private Simulation simulation;
     private ParameterController parameterController;
@@ -24,19 +29,36 @@ public class SimulationController {
     private NetworkQueue networkQueue;
     private QueueStatistics latestQueueStats;
     
+    /**
+     * Constructs a new SimulationController.
+     */
     public SimulationController() {
         this.simulation = new Simulation();
         this.parameterController = new ParameterController();
     }
     
+    /**
+     * Sets the event controller.
+     * @param eventController the event controller to use
+     */
     public void setEventController(EventController eventController) {
         this.eventController = eventController;
     }
     
+    /**
+     * Sets the traffic controller.
+     * @param trafficController the traffic controller to use
+     */
     public void setTrafficController(TrafficController trafficController) {
         this.trafficController = trafficController;
     }
     
+    /**
+     * Runs a simulation with the given parameters.
+     * Validates parameters, executes simulation loop, and exports results to CSV.
+     * @param params simulation parameters
+     * @return true if successful, false otherwise
+     */
     public boolean runSimulation(SimulationParameters params) {
         List<Event> eventLog = new ArrayList<>();
         // Validate parameters
@@ -134,14 +156,26 @@ public class SimulationController {
         return true;
     }
     
+    /**
+     * Gets the traffic statistics from the simulation.
+     * @return TrafficStatistics object
+     */
     public TrafficStatistics getResults() {
         return simulation.getStats();
     }
     
+    /**
+     * Checks if simulation is running.
+     * @return true if running, false otherwise
+     */
     public boolean isRunning() {
         return simulation.isRunning();
     }
 
+    /**
+     * Gets the queue statistics from the simulation.
+     * @return QueueStatistics object
+     */
     public QueueStatistics getQueueStatistics() {
         return latestQueueStats;
     }
