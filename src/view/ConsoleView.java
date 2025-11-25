@@ -42,7 +42,6 @@ public class ConsoleView {
             TrafficStatistics resultStats = simController.getResults();
             System.out.println("Simulation completed successfully.");
             OutputFormatter.printSummary(resultStats);
-            OutputFormatter.printQueueStatistics(simController.getQueueStatistics());
         } catch (QuitHandler qh) {
             System.out.println("Exiting simulation.");
         }
