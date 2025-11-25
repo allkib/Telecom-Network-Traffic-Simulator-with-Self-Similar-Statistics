@@ -9,7 +9,7 @@
 ### 1. Self-Assessment Checklist
 
 | Feature | Status | 
-| --- | --- | --- |
+| --- | --- |
 | Input Parameters | ✅ |
 | Traffic Model Implementation | ✅ |
 | Event-Driven Simulation | ✅ | 
