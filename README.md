@@ -1,8 +1,7 @@
 ## Telecom Network Traffic Simulator – Project Report
 
-**Student:** All Kibria & Clarence Soh
-**Group:** 13
-**Project:** Telecom Network Traffic Simulator with Self-Similar Statistics
+- **Student:** All Kibria & Clarence Soh
+- **Group:** 13
 
 ---
 
