@@ -28,18 +28,7 @@ _All required and agreed advanced/bonus features are implemented and working._
 
 ---
 
-### 2. System Overview & Testing Summary
-
-- **Architecture:** MVC separation (`model`, `controller`, `view`, `util`). `SimulationController` orchestrates the loop, sampling, and queue integration. `TrafficController` handles sources (ON/OFF or FGN). `EventController` uses `EventQueue` to process ON/OFF transitions. `NetworkQueue` measures downstream impact.
-- **Console Workflow:** `ConsoleView` gathers parameters (manual entry, defaults, or load from file), validates via `ParameterController`, executes the simulation, prints statistics, and exports CSVs.
-- **Testing Approach:**
-  - **Unit Tests:** Coverage for key classes (e.g., `TrafficSourceTest`, `EventQueueTest`, `TrafficControllerTest`, `FileHandlerTest`, `ParameterControllerTest`, `SimulationControllerTest`).
-  - **System Tests:** `SystemTest` runs end-to-end scenarios (successful runs, varied parameters, error paths).
-  - Tests run with JUnit 5 (`junit-platform-console-standalone.jar`).
-
----
-
-### 3. Testing Setup
+### 2. Testing Setup
 
 #### Prerequisites
 
@@ -70,23 +59,12 @@ javac -cp "lib/junit-platform-console-standalone.jar:src:test" -d out @sources.t
 
 #### Running Tests
 
-**Run all tests:**
 ```bash
 java -jar lib/junit-platform-console-standalone.jar -cp "out:src:test" --scan-class-path
 ```
-
-**Run a specific test class:**
-```bash
-java -jar lib/junit-platform-console-standalone.jar -cp "out:src:test" -c test.FileHandlerTest
-```
-
-**Run tests with verbose output:**
-```bash
-java -jar lib/junit-platform-console-standalone.jar -cp "out:src:test" --scan-class-path --details verbose
-```
 ---
 
-### 4. Build & Run Instructions
+### 3. Build & Run Instructions
 
 ```bash
 cd .../Telecom-Network-Traffic-Simulator-with-Self-Similar-Statistics
