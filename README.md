@@ -39,6 +39,53 @@ _All required and agreed advanced/bonus features are implemented and working._
 
 ---
 
+### 3. Testing Setup
+
+#### Prerequisites
+
+1. **Download JUnit 5 Standalone JAR:**
+   ```bash
+   mkdir -p lib
+   cd lib
+   curl -L -o junit-platform-console-standalone.jar https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.10.0/junit-platform-console-standalone-1.10.0.jar
+   cd ..
+   ```
+
+2. **Create output directory:**
+   ```bash
+   mkdir -p out
+   ```
+
+#### Compiling Tests
+
+Compile all source files (including test files) with JUnit in the classpath:
+
+```bash
+# Create sources list
+find src test -name "*.java" > sources.txt
+
+# Compile with JUnit in classpath
+javac -cp "lib/junit-platform-console-standalone.jar:src:test" -d out @sources.txt
+```
+
+#### Running Tests
+
+**Run all tests:**
+```bash
+java -jar lib/junit-platform-console-standalone.jar -cp "out:src:test" --scan-class-path
+```
+
+**Run a specific test class:**
+```bash
+java -jar lib/junit-platform-console-standalone.jar -cp "out:src:test" -c test.FileHandlerTest
+```
+
+**Run tests with verbose output:**
+```bash
+java -jar lib/junit-platform-console-standalone.jar -cp "out:src:test" --scan-class-path --details verbose
+```
+---
+
 ### 4. Build & Run Instructions
 
 ```bash
